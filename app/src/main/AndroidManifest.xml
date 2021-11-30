@@ -24,10 +24,10 @@
         <activity android:name=".test.DeviceScanActivity"
             android:label="@string/app_name"
             android:exported="true">
-<!--            <intent-filter>-->
-<!--                <action android:name="android.intent.action.MAIN"/>-->
-<!--                <category android:name="android.intent.category.LAUNCHER"/>-->
-<!--            </intent-filter>-->
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
         </activity>
         <activity android:name=".test.DeviceControlActivity"/>
         <service android:name=".test.BluetoothLeService" android:enabled="true"/>
@@ -35,11 +35,11 @@
         <activity
             android:name=".DeviceScanAct"
             android:exported="true">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
+<!--            <intent-filter>-->
+<!--                <action android:name="android.intent.action.MAIN" />-->
 
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
+<!--                <category android:name="android.intent.category.LAUNCHER" />-->
+<!--            </intent-filter>-->
         </activity>
     </application>
 

@@ -165,7 +165,7 @@ public class DeviceScanAct extends AppCompatActivity {
         public void onScanResult(int callbackType, ScanResult result) {
             BluetoothDevice device = result.getDevice();
             leDeviceListAdapter.addItem(device);
-//            connectToDevice(device);
+            connectToDevice(device);
         }
 
         @Override
@@ -214,6 +214,7 @@ public class DeviceScanAct extends AppCompatActivity {
                 case BluetoothProfile.STATE_CONNECTED:
                     String name = gatt.getDevice().getName();
                     Log.i("ddddd gattCallback", "STATE_CONNECTED " + name);
+                    /*service 검색*/
                     gatt.discoverServices();
                     break;
                 case BluetoothProfile.STATE_DISCONNECTED:
@@ -224,12 +225,23 @@ public class DeviceScanAct extends AppCompatActivity {
             }
         }
 
+        /*service 검색 결과*/
         @Override
         public void onServicesDiscovered(BluetoothGatt gatt, int status) {
             List<BluetoothGattService> services = gatt.getServices();
             Log.i("ddddd onServices", services.toString());
-            gatt.readCharacteristic(services.get(1).getCharacteristics().get
-                    (0));
+            gatt.readCharacteristic(services.get(1).getCharacteristics().get(0));
+
+//            if (((characteristic.getProperties() & BluetoothGattCharacteristic.PROPERTY_WRITE) |
+//                    (charaProp & BluetoothGattCharacteristic.PROPERTY_WRITE_NO_RESPONSE)) > 0) {
+//                // writing characteristic functions
+//                mWriteCharacteristic = characteristic;
+//            }
+//            String str = "2";
+//            byte[] strBytes = str.getBytes();
+//            byte[] bytes = this.mWriteCharacteristic.getValue();
+//            this.mWriteCharacteristic.setValue(bytes);
+//            this.writeCharacteristic(YourActivity.this.mWriteCharacteristic);
         }
 
         @Override

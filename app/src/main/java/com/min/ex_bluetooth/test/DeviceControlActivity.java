@@ -20,6 +20,7 @@ import android.widget.SimpleExpandableListAdapter;
 import android.widget.TextView;
 
 import com.min.ex_bluetooth.R;
+import com.min.ex_bluetooth.test.util.ConvertText;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -99,6 +100,7 @@ public class DeviceControlActivity extends Activity {
                                 mGattCharacteristics.get(groupPosition).get(childPosition);
                         final int charaProp = characteristic.getProperties();
                         if ((charaProp | BluetoothGattCharacteristic.PROPERTY_READ) > 0) {
+                            Log.e("ddddddd", "read");
                             // If there is an active notification on a characteristic, clear
                             // it first so it doesn't update the data field on the user interface.
                             if (mNotifyCharacteristic != null) {
@@ -109,9 +111,13 @@ public class DeviceControlActivity extends Activity {
                             mBluetoothLeService.readCharacteristic(characteristic);
                         }
                         if ((charaProp | BluetoothGattCharacteristic.PROPERTY_NOTIFY) > 0) {
+                            Log.e("ddddddd", "notify");
+
                             mNotifyCharacteristic = characteristic;
                             mBluetoothLeService.setCharacteristicNotification(
                                     characteristic, true);
+                            mBluetoothLeService.writeCharacteristic(mNotifyCharacteristic, "202|-1");
+
                         }
                         return true;
                     }
@@ -135,8 +141,8 @@ public class DeviceControlActivity extends Activity {
         mGattServicesList.setOnChildClickListener(servicesListClickListner);
         mConnectionState = (TextView) findViewById(R.id.connection_state);
         mDataField = (TextView) findViewById(R.id.data_value);
-        getActionBar().setTitle(mDeviceName);
-        getActionBar().setDisplayHomeAsUpEnabled(true);
+//        getActionBar().setTitle(mDeviceName);
+//        getActionBar().setDisplayHomeAsUpEnabled(true);
         Intent gattServiceIntent = new Intent(this, BluetoothLeService.class);
         bindService(gattServiceIntent, mServiceConnection, BIND_AUTO_CREATE);
     }
@@ -239,6 +245,7 @@ public class DeviceControlActivity extends Activity {
             mGattCharacteristics.add(charas);
             gattCharacteristicData.add(gattCharacteristicGroupData);
         }
+
         SimpleExpandableListAdapter gattServiceAdapter = new SimpleExpandableListAdapter(
                 this,
                 gattServiceData,

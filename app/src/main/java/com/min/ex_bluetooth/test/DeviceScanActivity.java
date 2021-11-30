@@ -1,5 +1,6 @@
 package com.min.ex_bluetooth.test;
 
+import android.Manifest;
 import android.app.Activity;
 import android.app.ListActivity;
 import android.bluetooth.BluetoothAdapter;
@@ -24,6 +25,8 @@ import com.min.ex_bluetooth.R;
 
 import java.util.ArrayList;
 
+import androidx.core.app.ActivityCompat;
+
 public class DeviceScanActivity extends ListActivity {
     private LeDeviceListAdapter mLeDeviceListAdapter;
     private BluetoothAdapter mBluetoothAdapter;
@@ -44,7 +47,7 @@ public class DeviceScanActivity extends ListActivity {
             finish();
         }
 
-        /*BluetoothAdapter*/
+        /*BluetoothAdapter 초기화*/
         final BluetoothManager bluetoothManager =
                 (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
         mBluetoothAdapter = bluetoothManager.getAdapter();
@@ -89,13 +92,10 @@ public class DeviceScanActivity extends ListActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        // Ensures Bluetooth is enabled on the device.  If Bluetooth is not currently enabled,
-        // fire an intent to display a dialog asking the user to grant permission to enable it.
+        // 블루투스 활성화
         if (!mBluetoothAdapter.isEnabled()) {
-            if (!mBluetoothAdapter.isEnabled()) {
-                Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-                startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
-            }
+            Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+            startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
         }
         // Initializes list view adapter.
         mLeDeviceListAdapter = new LeDeviceListAdapter();
