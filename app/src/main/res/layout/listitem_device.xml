@@ -17,4 +17,11 @@
         android:layout_height="wrap_content"
         android:hint="address"
         android:textSize="12dp" />
+
+    <TextView
+        android:id="@+id/device_uuid"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="uuid"
+        android:textSize="12dp" />
 </LinearLayout>
