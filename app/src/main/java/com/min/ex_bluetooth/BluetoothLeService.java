@@ -1,4 +1,4 @@
-package com.min.ex_bluetooth.test;
+package com.min.ex_bluetooth;
 
 import android.app.Service;
 import android.bluetooth.BluetoothAdapter;
@@ -16,10 +16,7 @@ import android.os.Binder;
 import android.os.IBinder;
 import android.util.Log;
 
-import com.min.ex_bluetooth.test.util.ConvertText;
-
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.UUID;
 
@@ -51,6 +48,7 @@ public class BluetoothLeService extends Service {
                 mConnectionState = STATE_CONNECTED;
                 broadcastUpdate(intentAction);
                 mBluetoothGatt.discoverServices();
+
                 Log.i(TAG, "Connected to GATT server.");
             } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
                 intentAction = ACTION_GATT_DISCONNECTED;
@@ -63,10 +61,10 @@ public class BluetoothLeService extends Service {
         @Override
         public void onServicesDiscovered(BluetoothGatt gatt, int status) {
             if (status == BluetoothGatt.GATT_SUCCESS) {
-                Log.w(TAG, "onServicesDiscovered");
+                Log.e(TAG, "onServicesDiscovered");
                 broadcastUpdate(ACTION_GATT_SERVICES_DISCOVERED);
             } else {
-                Log.w(TAG, "onServicesDiscovered received: " + status);
+                Log.e(TAG, "onServicesDiscovered received: " + status);
             }
         }
 
@@ -74,6 +72,7 @@ public class BluetoothLeService extends Service {
         public void onCharacteristicRead(BluetoothGatt gatt,
                                          BluetoothGattCharacteristic characteristic,
                                          int status) {
+            Log.e(TAG, "onCharacteristicRead");
             if (status == BluetoothGatt.GATT_SUCCESS) {
                 broadcastUpdate(ACTION_DATA_AVAILABLE, characteristic);
             }
@@ -82,19 +81,26 @@ public class BluetoothLeService extends Service {
         @Override
         public void onCharacteristicWrite(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
             super.onCharacteristicWrite(gatt, characteristic, status);
-            String text = null;
-            try {
-                text = new String(characteristic.getValue(), "UTF-8");
-            } catch (UnsupportedEncodingException e) {
-                e.printStackTrace();
-            }
+            Log.e(TAG, "onCharacteristicWrite");
+            /*ble 기기로 송신한 데이터*/
+            String text = "";
 
-            Log.w(TAG, "onCharacteristicWrite = " + text+" :: "+status);
+//            byte[] bytes = characteristic.getValue();
+//            for (int i = 0; i < bytes.length; i++) {
+//                if (i == 3) {
+//                    text += String.valueOf((char) bytes[i]);
+//                } else {
+//                    text += bytes[i];
+//                }
+//            }
+            text = new String(characteristic.getValue(), StandardCharsets.UTF_8);
+            Log.e(TAG, text + " / " + status);
         }
 
         @Override
         public void onCharacteristicChanged(BluetoothGatt gatt,
                                             BluetoothGattCharacteristic characteristic) {
+            Log.e(TAG, "onCharacteristicChanged");
             broadcastUpdate(ACTION_DATA_AVAILABLE, characteristic);
         }
 
@@ -130,8 +136,10 @@ public class BluetoothLeService extends Service {
             final byte[] data = characteristic.getValue();
             if (data != null && data.length > 0) {
                 final StringBuilder stringBuilder = new StringBuilder(data.length);
-                for (byte byteChar : data)
+                for (byte byteChar : data) {
                     stringBuilder.append(String.format("%02X ", byteChar));
+                    Log.e(TAG + " success", byteChar + " / " + String.format("%02X ", byteChar));
+                }
                 intent.putExtra(EXTRA_DATA, new String(data) + "\n" + stringBuilder.toString());
             }
         }
@@ -257,7 +265,7 @@ public class BluetoothLeService extends Service {
      */
     public void readCharacteristic(BluetoothGattCharacteristic characteristic) {
         if (mBluetoothAdapter == null || mBluetoothGatt == null) {
-            Log.w(TAG, "BluetoothAdapter not initialized");
+            Log.e(TAG, "BluetoothAdapter not initialized");
             return;
         }
         mBluetoothGatt.readCharacteristic(characteristic);
@@ -268,32 +276,17 @@ public class BluetoothLeService extends Service {
      * asynchronously through the {@code BluetoothGattCallback#onCharacteristicWrite(andorid.bluetooth.BluetoothGatt, android.bluetooth.BluetoothGattCharacteristic, int)}
      * callback.
      */
-    public void writeCharacteristic(BluetoothGattCharacteristic characteristic, String text) {
-//        if (mBluetoothGatt == null) {
-//            Log.w(TAG, "BluetoothAdapter not initialized");
-//            return;
-//        }
-//        mBluetoothGatt.writeCharacteristic(characteristic);
-
+    public boolean writeCharacteristic(BluetoothGattCharacteristic characteristic, byte[] data) {
         if (mBluetoothAdapter == null || mBluetoothGatt == null) {
-            Log.w("dddddddd", "BluetoothAdapter not initialized");
-            return;
-        } else {
-            Log.w("dddddddd", "Writting ... ");
+            Log.e(TAG, "BluetoothAdapter not initialized");
+            return false;
         }
-        byte[] data = ConvertText.stringToByteArray(text);
 
-        Log.w("dddddddd", "Writting text = " + data);
-
-        try {
-            characteristic.setValue(URLEncoder.encode(text, "utf-8"));
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-        }
+        characteristic.setValue(data);
 
         boolean writeValue = mBluetoothGatt.writeCharacteristic(characteristic);
-
-        Log.w("dddddddd", "Writting Status = " + writeValue);
+        Log.e(TAG, "Writting Status = " + writeValue);
+        return writeValue;
     }
 
     /**
@@ -302,6 +295,7 @@ public class BluetoothLeService extends Service {
      * @param characteristic Characteristic to act on.
      * @param enabled        If true, enable notification.  False otherwise.
      */
+    /*특성(Characteristic) 값이 변경되면 Gatt 서버에 알림 요청*/
     public void setCharacteristicNotification(BluetoothGattCharacteristic characteristic,
                                               boolean enabled) {
         if (mBluetoothAdapter == null || mBluetoothGatt == null) {
@@ -310,6 +304,7 @@ public class BluetoothLeService extends Service {
         }
         mBluetoothGatt.setCharacteristicNotification(characteristic, enabled);
         // This is specific to Heart Rate Measurement.
+        Log.e("dddd", characteristic.getUuid()+"");
         if (UUID_HEART_RATE_MEASUREMENT.equals(characteristic.getUuid())) {
             BluetoothGattDescriptor descriptor = characteristic.getDescriptor(
                     UUID.fromString(SampleGattAttributes.CLIENT_CHARACTERISTIC_CONFIG));
